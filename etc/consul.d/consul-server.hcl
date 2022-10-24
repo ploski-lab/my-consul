@@ -75,7 +75,7 @@ acl = {
   enable_token_persistence = true
   enable_token_replication = true
   tokens {
-  agent = "4b13058a-5d0c-84e2-212b-89a59c68c02b"
+  agent = "BLAH_TOKEN"
   }
 }
 
@@ -88,7 +88,7 @@ connect {
   ca_provider = "vault"
   ca_config{
     address = "https://127.0.0.1:8200"
-    token = "hvs.CAESIJgvryIBpRozM3X5t49ZpCP3xbBln96pn2as28nHrqOfGiEKHGh2cy5VTnNjY3hTSG5QZk5SWDA4WDhJb0JDOTgQwwc"
+    token = "BLAH_TOKEN"
     root_pki_path = "consul/intCA1"
     intermediate_pki_path = "consul/intCA2"
   }
