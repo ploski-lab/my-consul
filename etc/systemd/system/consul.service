@@ -15,4 +15,4 @@ TimeoutStopSec=5
 Restart=on-failure
 SyslogIdentifier=consul
 [Install]
-WantedBy=multi-user.targetk
+WantedBy=multi-user.target
