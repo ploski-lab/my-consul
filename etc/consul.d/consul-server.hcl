@@ -62,7 +62,7 @@ bootstrap_expect=1
 # protocol, this option only needs to be provided once on each agent's initial startup
 # sequence. If it is provided after Consul has been initialized with an encryption key,
 # then the provided key is ignored and a warning will be displayed.
-encrypt = "fjx2p2EuQ1j6VvLP6UwsGUfY5H6wXuV5M+UEyfUt3lI="
+encrypt = "YOUR_ENCRYPT_KEYGEN"
 encrypt_verify_outgoing = true
 
 
@@ -75,7 +75,7 @@ acl = {
   enable_token_persistence = true
   enable_token_replication = true
   tokens {
-  agent = "BLAH_TOKEN"
+  agent = "YOUR_TOKEN"
   }
 }
 
