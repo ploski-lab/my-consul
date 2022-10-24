@@ -1,0 +1,18 @@
+[Unit]
+Description=Consul
+Documentation=https://developer.hashicorp.com/consul
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=consul
+Group=consul
+
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/bin/consul agent   -server -ui -advertise=192.168.4.30 -bind=192.168.4.30 -data-dir=/opt/consul -node=mars -config-dir=/etc/consul.d/
+KillSignal=SIGINT
+TimeoutStopSec=5
+Restart=on-failure
+SyslogIdentifier=consul
+[Install]
+WantedBy=multi-user.targetk

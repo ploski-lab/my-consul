@@ -1,0 +1,3 @@
+node "mars" {
+  policy = "write"
+}
