@@ -32,6 +32,15 @@ variable cert_province {
     default = "Scotland"
 }
 
+variable "ca_expiry_length" {
+    description = "Amount of time before the self-signed CA is invalidated. (This should be a while as it revokes all the other certs)"
+    default = "10 years"
+}
+
 variable cert_passphrase {
     description = "A secret passphrase for the CA certificate signing"
+}
+
+variable "vault_url" {
+    description = "Public facing URL for the Vault server/cluster"
 }

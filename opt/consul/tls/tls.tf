@@ -1,11 +1,11 @@
 resource "null_resource" "create_offline_CA" {
   provisioner "local-exec" {
-    command = "mkdir -p out;certstrap init --expires \"10 years\" -o \"${var.cert_organization}\" --ou \"${var.cert_ou}\" -c \"${var.cert_country}\" --cn \"${local.root_common_name}\"  --exclude-path-length --passphrase \"${var.cert_passphrase}\""
+    command = "mkdir -p out;certstrap init --expires \"${var.ca_expiry_length}\" -o \"${var.cert_organization}\" --ou \"${var.cert_ou}\" -c \"${var.cert_country}\" --cn \"${local.root_common_name}\"  --exclude-path-length --passphrase \"${var.cert_passphrase}\""
   }
 }
 
 # Create a PKI secrets engine for the Intermediate Certificate Authority.
-#https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/mount
+# https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/mount
 resource "vault_mount" "intermediate_ca1" {
   depends_on = [null_resource.create_offline_CA]
   path                      = "${var.server_cert_domain}/intCA1"
@@ -31,6 +31,14 @@ resource "vault_pki_secret_backend_intermediate_cert_request" "intermediate_ca1"
   province     = var.cert_province
 }
 
+# Generates the certificate endpoints, the content revocation lists (CRLs) that will be encoded into issued certs.
+# https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/pki_secret_backend_config_urls
+resource "vault_pki_secret_backend_config_urls" "intermediate_ca1" {
+  backend = vault_mount.intermediate_ca1.path
+  issuing_certificates = ["${var.vault_url}/${vault_mount.intermediate_ca1.path}/ca"]
+  crl_distribution_points = ["${var.vault_url}/${vault_mount.intermediate_ca1.path}}/crl"]
+}
+
 resource "null_resource" "extract_and_sign" {
   depends_on = [vault_pki_secret_backend_intermediate_cert_request.intermediate_ca1]
 
@@ -41,7 +49,7 @@ resource "null_resource" "extract_and_sign" {
 
   # Sign the CSR with the offline Root CA
   provisioner "local-exec" {
-    command = "certstrap sign --expires \"10 years\" --csr ${local.csr_path} --cert ${local.root_ca_file} --intermediate --CA \"${local.root_common_name}\" --path-length 5 \"${local.ca1_common_name}\" --passphrase \"${var.cert_passphrase}\" --stdout > ${local.int_ca1_file}"
+    command = "certstrap sign --expires \"${var.ca_expiry_length}\" --csr ${local.csr_path} --cert ${local.root_ca_file} --intermediate --CA \"${local.root_common_name}\" --path-length 5 \"${local.ca1_common_name}\" --passphrase \"${var.cert_passphrase}\" --stdout > ${local.int_ca1_file}"
   }
 
   # Place signed Intermediate CA cert into the cacerts directory

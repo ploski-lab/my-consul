@@ -48,6 +48,8 @@ resource "vault_pki_secret_backend_root_sign_intermediate" "intCA2_signed_cert" 
   province             = var.cert_province
   max_path_length      = 5
   ttl                  = local.default_10y_in_sec
+  revoke               = true
+  format               = "pem_bundle"
 }
 
 
@@ -59,6 +61,15 @@ resource "vault_pki_secret_backend_intermediate_set_signed" "intCA2_signed_cert"
   backend     = vault_mount.intermediate_ca2.path
   certificate = format("%s\n%s", vault_pki_secret_backend_root_sign_intermediate.intCA2_signed_cert.certificate, file("${path.module}/${local.cacert_path}"))
 }
+
+# Generates the certificate endpoints, the content revocation lists (CRLs) that will be encoded into issued certs.
+# https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/pki_secret_backend_config_urls
+resource "vault_pki_secret_backend_config_urls" "intermediate_ca2" {
+  backend = vault_mount.intermediate_ca2.path
+  issuing_certificates = ["${var.vault_url}/${vault_mount.intermediate_ca1.path}/ca"]
+  crl_distribution_points = ["${var.vault_url}/${vault_mount.intermediate_ca1.path}/crl"]
+}
+
 
 output "intermediate_ca2_cert" {
   depends_on = [vault_pki_secret_backend_intermediate_set_signed.intCA2_signed_cert]
@@ -81,10 +92,10 @@ resource "vault_pki_secret_backend_role" "role" {
   allow_ip_sans      = true
   key_type           = "rsa"
   key_bits           = 2048
-  key_usage          = [ "DigitalSignature"]
+  key_usage          = ["DigitalSignature"]
   allow_any_name     = true
   allow_localhost    = true
-  allowed_domains    = [var.server_cert_domain, "localhost", "*.home", "*.home-lab.consul" ]
+  allowed_domains    = [var.server_cert_domain, "localhost", "*.${var.server_cert_domain}", "*.home-lab.consul", "*.consul", "consul-server"]
   allow_bare_domains = true
   allow_subdomains   = true
   server_flag        = true
